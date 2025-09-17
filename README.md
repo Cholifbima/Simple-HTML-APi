@@ -1,6 +1,6 @@
-# HTML File Server
+# HTML File Server dengan Locust Load Testing
 
-Tugas Sistem Terdistribusi - API untuk serve HTML files berbagai ukuran
+Tugas Sistem Terdistribusi - API untuk serve HTML files berbagai ukuran + Load Testing dengan Locust Web UI
 
 ## Apa ini?
 Simple API pakai Flask buat serve file HTML dengan ukuran:
@@ -13,9 +13,11 @@ Simple API pakai Flask buat serve file HTML dengan ukuran:
 ## File dalam project
 
 ```
-├── app.py              # kode utama
-├── requirements.txt    # dependencies
-└── html_files/         # file HTML
+├── app.py                    # Flask server utama
+├── requirements.txt          # Python dependencies
+├── locustfile.py            # Locust test scenarios
+├── monitor_system.py        # System monitoring
+└── html_files/              # HTML files berbagai ukuran
     ├── small_10kb.html
     ├── medium_100kb.html
     ├── large_1mb.html
@@ -62,22 +64,31 @@ Sederhana aja, Flask handle routing dan file serving.
 
 ## Cara jalanin
 
-Install dependencies dulu:
+### 1. Install Dependencies (include Locust)
 ```bash
 pip install -r requirements.txt
 ```
 
-Jalankan server:
+### 2. Jalankan Flask Server
 ```bash
 python app.py
 ```
 
+### 3. Akses Server
 Buka browser ke `http://localhost:5000`
+
+### 4. Jalankan Load Testing
+```bash
+# Locust Web UI (recommended)
+locust -f locustfile.py --host=http://localhost:5000
+
+# Buka browser ke: http://localhost:8089
+# Input users, spawn rate, dan duration
+```
 
 ## Testing
 
-Bisa test pakai browser atau curl:
-
+### Manual Testing
 ```bash
 # Download file kecil
 curl http://localhost:5000/api/html/small
@@ -87,6 +98,28 @@ curl http://localhost:5000/api/info
 
 # Cek status server
 curl http://localhost:5000/api/status
+```
+
+### Load Testing dengan Locust
+```bash
+# Web UI Mode (recommended untuk demo cantik)
+locust -f locustfile.py --host=http://localhost:5000
+# Buka http://localhost:8089
+
+# Command Line Mode (untuk exact request count)
+locust -f locustfile.py --host=http://localhost:5000 -u 10 -r 2 -t 60s --headless
+
+# Different user types:
+# LightLoadUser    - File kecil, response time cepat
+# MediumLoadUser   - Mix file size, beban sedang  
+# HeavyLoadUser    - File besar, test bandwidth
+# StressTestUser   - Maksimal beban, test breaking point
+```
+
+### System Monitoring
+```bash
+# Monitor resource usage selama testing
+python monitor_system.py
 ```
 
 ## Contoh response
@@ -106,12 +139,3 @@ Info endpoint kasih JSON kayak gini:
   "total_files": 5
 }
 ```
-
-## Notes
-
-- Server jalan di port 5000
-- Kalau salah parameter bakal kasih error JSON
-- File besar mungkin agak lama downloadnya
-- Threading enabled jadi bisa handle multiple request
-
-Itu aja sih, simple API buat tugas kuliah.
